@@ -1,6 +1,86 @@
 
 # Build a Game-playing Agent
 
+# Table of Contents
+  * [Chapter 1 - My Setup and Rubrics Checklist](#chapter-1)
+  * [Chapter 2 - Info from Udacity](#chapter-2)
+
+# Chapter 1 - My Setup and Rubrics Checklist <a id="chapter-1"></a>
+
+### Project Specification Checklist - Build a Game-Playing Agent https://review.udacity.com/#!/rubrics/680/view
+
+## CRITERIA / MEETS SPECIFICATIONS
+
+* Game Playing Agent
+
+[ ] - Implement in `game_agent.py` and Submit the code file: `game_agent.py`:
+    * At least three custom heuristic functions (only one of which should be submitted,
+    as `custom_score()`)
+        * For each of your three custom heuristic functions, evaluate the performance of
+        the heuristic using the included `tournament.py` script. Then write up a brief
+        summary of your results, describing the performance of the agent using the different
+        heuristic functions verbally and using appropriate visualizations.
+        Submit your analysis as: `heuristic_analysis.pdf`
+        Your analysis should conclude with a comparison of the different heuristics
+        and your reasoning for choosing the heuristic you ultimately use in your submitted agent.
+    * An iterative deepening adversarial search function: `CustomPlayer.get_move()`
+        * The `get_move()` method should call either `minimax` or `alpha-beta` depending on
+        the method selected. Iterative deepening should be used if the iterative flag is set.
+    * A minimax adversarial search algorithm: `CustomPlayer.minimax()`
+    * An alpha-beta pruning minimax search: `CustomPlayer.alphabeta()`
+
+[ ] - Is Adversarial Search correctly implemented using:
+    * iterative deepening,
+    * minimax, and
+    * alpha-beta pruning?
+
+[ ] - All Unit tests pass. The `minimax` and `alphabeta` functions pass all test cases. Run test to check.
+
+* Heuristic Analysis
+
+[ ] - Have at least three (3) evaluation heuristics besides
+      `null_score()`, `open_move_score()`, and `improved_score()` been implemented and analyzed?
+      (At least three evaluation functions are implemented and analyzed)
+
+[ ] - Has the performance of agents against the testing agents been adequately described?
+      / A brief report lists (using a table and any appropriate visualizations) and verbally
+      describes the performance of agents using the implemented evaluation functions.
+      Performance data includes results from tournament.py comparing (at a minimum) the
+      best performing student heuristic against the ID_Improved agent.
+
+[ ] - Does the report make a recommendation about the best evaluation function,
+      and is this recommendation adequately justified?
+      / The report makes a recommendation about which evaluation function should be
+      used and justifies the recommendation with at least three reasons supported by the data.
+
+* Paper Summary (Research Review)
+
+[ ] - Completeness /
+    * The write up is approximately 1 page (500 words) and includes a:
+    * summary of the paper (including new techniques introduced), and the
+    * key results (if any) that were achieved.
+
+      Read a seminal paper in the field of Game-Playing and write a simple one page summary on it.
+      Select a Game-Playing paper from the following list or another of your choosing:
+    *  Game Tree Searching by Min / Max Approximation by Ron Rivest, MIT (Fun fact, Ron Rivest is the R is in the RSA cryptographic protocol).
+    https://people.csail.mit.edu/rivest/pubs/Riv87c.pdf
+    * Deep Blue by the IBM Watson Team (Fun fact, Deep Blue beat Gary Kasparov in Chess in one of the most famous AI spectacles of the 20th century).
+    https://pdfs.semanticscholar.org/ad2c/1efffcd7c3b7106e507396bdaa5fe00fa597.pdf
+    * AlphaGo by the DeepMind Team.
+    https://storage.googleapis.com/deepmind-media/alphago/AlphaGoNaturePaper.pdf
+
+      Write a simple one page summary of the paper covering the following:
+    * A brief summary of the paper's goals or techniques introduced (if any).
+    * A brief summary of the paper's results (if any).
+      Submit this as: `research_review.pdf`
+
+* Submission
+
+[ ] - Submit your work by uploading a .zip file containing all your work, which must include
+      the following files: `game_agent.py`, `heuristic_analysis.pdf`, `research_review.pdf`
+
+# Chapter 2 - Info from Udacity <a id="chapter-2"></a>
+
 ## Synopsis
 
 In this project, students will develop an adversarial search agent to play the game "Isolation".  Students only need to modify code in the `game_agent.py`, however, code is included for example player and evaluation functions for you to review and test against in the other files.

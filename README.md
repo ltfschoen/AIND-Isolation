@@ -13,7 +13,8 @@
 
 * Game Playing Agent
 
-[ ] - Implement in `game_agent.py` and Submit the code file: `game_agent.py`:
+* [ ] - Implement in `game_agent.py` and Submit the code file: `game_agent.py`:
+    * Refer to my notes on Lesson 6.16
     * At least three custom heuristic functions (only one of which should be submitted,
     as `custom_score()`)
         * For each of your three custom heuristic functions, evaluate the performance of
@@ -29,33 +30,33 @@
     * A minimax adversarial search algorithm: `CustomPlayer.minimax()`
     * An alpha-beta pruning minimax search: `CustomPlayer.alphabeta()`
 
-[ ] - Is Adversarial Search correctly implemented using:
+* [ ] - Is Adversarial Search correctly implemented using:
     * iterative deepening,
     * minimax, and
     * alpha-beta pruning?
 
-[ ] - All Unit tests pass. The `minimax` and `alphabeta` functions pass all test cases. Run test to check.
+* [ ] - All Unit tests pass. The `minimax` and `alphabeta` functions pass all test cases. Run test to check.
 
 * Heuristic Analysis
 
-[ ] - Have at least three (3) evaluation heuristics besides
+* [ ] - Have at least three (3) evaluation heuristics besides
       `null_score()`, `open_move_score()`, and `improved_score()` been implemented and analyzed?
       (At least three evaluation functions are implemented and analyzed)
 
-[ ] - Has the performance of agents against the testing agents been adequately described?
+* [ ] - Has the performance of agents against the testing agents been adequately described?
       / A brief report lists (using a table and any appropriate visualizations) and verbally
       describes the performance of agents using the implemented evaluation functions.
       Performance data includes results from tournament.py comparing (at a minimum) the
       best performing student heuristic against the ID_Improved agent.
 
-[ ] - Does the report make a recommendation about the best evaluation function,
+* [ ] - Does the report make a recommendation about the best evaluation function,
       and is this recommendation adequately justified?
       / The report makes a recommendation about which evaluation function should be
       used and justifies the recommendation with at least three reasons supported by the data.
 
 * Paper Summary (Research Review)
 
-[ ] - Completeness /
+* [ ] - Completeness /
     * The write up is approximately 1 page (500 words) and includes a:
     * summary of the paper (including new techniques introduced), and the
     * key results (if any) that were achieved.
@@ -76,7 +77,7 @@
 
 * Submission
 
-[ ] - Submit your work by uploading a .zip file containing all your work, which must include
+* [ ] - Submit your work by uploading a .zip file containing all your work, which must include
       the following files: `game_agent.py`, `heuristic_analysis.pdf`, `research_review.pdf`
 
 # Chapter 2 - Info from Udacity <a id="chapter-2"></a>

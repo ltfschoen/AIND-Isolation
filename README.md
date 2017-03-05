@@ -7,6 +7,14 @@
 
 # Chapter 1 - My Setup and Rubrics Checklist <a id="chapter-1"></a>
 
+### Instructions and Setup Environment
+* Switch to Miniconda env `source activate aind` (same steps as in https://github.com/ltfschoen/aind/blob/master/README.md)
+* Install dependencies `python3 -m pip install mypy typing`
+* IntelliJ: File > Project Structure > Project Settings > Project > Project SDK > Python 3.6.0 (~/miniconda3/bin/python)
+* Run Program: `python main.py --log=DEBUG`
+* Run MyPy Linter with `mypy game_agent.py`
+* Run Unit Tests: `python agent_test.py -v`
+
 ### Project Specification Checklist - Build a Game-Playing Agent https://review.udacity.com/#!/rubrics/680/view
 
 ## CRITERIA / MEETS SPECIFICATIONS
@@ -30,17 +38,19 @@
     * A minimax adversarial search algorithm: `CustomPlayer.minimax()`
     * An alpha-beta pruning minimax search: `CustomPlayer.alphabeta()`
 
-* [ ] - Is Adversarial Search correctly implemented using:
-    * iterative deepening,
-    * minimax, and
-    * alpha-beta pruning?
+* [ ] - Is Adversarial Search correctly implemented? using:
+* [ ] - iterative deepening,
+* [X] - minimax, and
+* [ ] - alpha-beta pruning?
 
-* [ ] - All Unit tests pass. The `minimax` and `alphabeta` functions pass all test cases. Run test to check.
+* [ ] - All Unit tests pass with `python agent_test.py -v`.
+* [X] - All `minimax` tests pass
+* [ ] - All `alphabeta` tests pass.
 
 * Heuristic Analysis
 
 * [ ] - Have at least three (3) evaluation heuristics besides
-      `null_score()`, `open_move_score()`, and `improved_score()` been implemented and analyzed?
+      `null_score()`, `open_move_score()`, and `improved_score()` (in sample_players.py) been implemented and analyzed?
       (At least three evaluation functions are implemented and analyzed)
 
 * [ ] - Has the performance of agents against the testing agents been adequately described?
@@ -79,6 +89,10 @@
 
 * [ ] - Submit your work by uploading a .zip file containing all your work, which must include
       the following files: `game_agent.py`, `heuristic_analysis.pdf`, `research_review.pdf`
+
+* Other
+
+* [X] - Understood the example with sample players by running `python sample_players.py`
 
 # Chapter 2 - Info from Udacity <a id="chapter-2"></a>
 

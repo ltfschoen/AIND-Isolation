@@ -7,12 +7,13 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
-
+import logging
+import typing; from typing import *
+from heuristics import null_score, open_move_score, improved_score
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
-
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -37,9 +38,19 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
 
+    if game.is_winner(player):
+        return float("inf")
+
+    heuristics_options = {
+        "null_score": null_score,
+        "open_move_score": open_move_score,
+        "improved_score": improved_score
+    }
+
+    return heuristics_options["improved_score"](game, player)
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -52,7 +63,7 @@ class CustomPlayer:
     search_depth : int (optional)
         A strictly positive integer (i.e., 1, 2, 3,...) for the number of
         layers in the game tree to explore for fixed-depth search. (i.e., a
-        depth of one (1) would only explore the immediate sucessors of the
+        depth of one (1) would only explore the immediate successors of the
         current state.)
 
     score_fn : callable (optional)
@@ -172,8 +183,47 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # Initialise variable for no legal moves
+        no_legal_moves = (-1, -1)
+        best_move = no_legal_moves
+        best_utility = float('-inf') if maximizing_player else float('inf')
+        current_player = game.active_player if maximizing_player else game.inactive_player
+        remaining_legal_moves = game.get_legal_moves(game.active_player)
+
+        logging.debug("Current player is Maximizing: %r", maximizing_player)
+        logging.debug("Current depth: %r", depth)
+        logging.debug("Best utility: %r", best_utility)
+        logging.debug("Remaining legal moves: %r", remaining_legal_moves)
+
+        # Recursion function termination conditions when legal moves exhausted or no plies left
+        if not remaining_legal_moves:
+            logging.debug("Recursion terminated due to no remaining legal moves")
+            return game.utility(current_player), no_legal_moves
+        elif depth == 0:
+            logging.debug("Recursion terminated due to no more plies to search")
+            return self.score(game, current_player), remaining_legal_moves[0]
+
+        # Recursively alternate between Maximise and Minimise calculations for decrementing depths
+        for move in remaining_legal_moves:
+            logging.debug("Recursion with move: %r", move)
+            logging.debug("Best utility: %r", best_utility)
+            logging.debug("Best move: %r", best_move)
+
+            # Obtain successor of current state by creating copy of board and applying a move.
+            forecast_game = game.forecast_move(move)
+            forecast_utility, _ = self.minimax(forecast_game, depth - 1, not maximizing_player)
+            logging.debug("Forecast utility: %r", forecast_utility)
+
+            if maximizing_player:
+                logging.debug("Checking move with Maximising player, forecast_utility > best_utility? : %r", (forecast_utility > best_utility))
+                if forecast_utility > best_utility:
+                    best_utility, best_move = forecast_utility, move
+            else:
+                logging.debug("Checking move with Minimising player, forecast_utility < best_utility? : %r", (forecast_utility > best_utility))
+                if forecast_utility < best_utility:
+                    best_utility, best_move = forecast_utility, move
+
+        return best_utility, best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
@@ -218,3 +268,34 @@ class CustomPlayer:
 
         # TODO: finish this function!
         raise NotImplementedError
+
+def run():
+    try:
+        # Copy of minimax Unit Test for debugging only
+        import isolation
+        h, w = 7, 7
+        test_depth = 1
+        starting_location = (5, 3)
+        adversary_location = (0, 0)
+        iterative_search = False
+        search_method = "minimax"
+        heuristic = lambda g, p: 0.
+        agentUT = CustomPlayer(
+            test_depth, heuristic, iterative_search, search_method)
+        agentUT.time_left = lambda: 99
+        board = isolation.Board(agentUT, 'null_agent', w, h)
+        board.apply_move(starting_location)
+        board.apply_move(adversary_location)
+
+        for move in board.get_legal_moves():
+            next_state = board.forecast_move(move)
+            v, _ = agentUT.minimax(next_state, test_depth)
+            assert type(v) is float, "Minimax function should return a floating point value approximating the score for the branch being searched."
+        return
+    except SystemExit:
+        logging.exception('SystemExit occurred')
+    except:
+        logging.exception('Unknown exception occurred.')
+
+if __name__ == '__main__':
+    run()

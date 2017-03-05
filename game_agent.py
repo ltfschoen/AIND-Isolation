@@ -139,9 +139,10 @@ class CustomPlayer:
             logging.debug("Get Moves - Terminated due to no remaining legal moves")
             return no_legal_moves
 
-        # Flag indicating Iterative Deepening Search - Initialise Depth at 1 (to later be incremented)
+        # Flag indicating Iterative Deepening Search - Initialise Depth at 0 (to later be incremented)
+        #   - Reference: https://github.com/aimacode/aima-pseudocode/blob/master/md/Iterative-Deepening-Search.md
         # Flag otherwise indicates Fixed-Depth Search (FDS) - Set to Search Depth parameter (only for FDS)
-        depth = 1 if self.iterative else self.search_depth
+        depth = 0 if self.iterative else self.search_depth
 
         try:
             # The search method call (alpha beta or minimax) should happen in
@@ -153,17 +154,18 @@ class CustomPlayer:
             if self.iterative:
                 logging.debug("Get Moves - Performing Iterative Deepening Search to depth %r: ", depth)
                 while True:
+                    depth += 1
                     if self.method == 'minimax':
                         _, best_move = self.minimax(game, depth)
                     elif self.method == 'alphabeta':
                         _, best_move = self.alphabeta(game, depth)
                     else:
                         raise ValueError("Invalid method")
-                    depth += 1
+
                     # Check remaining time between depth iterations and
-                    # return the best move when less than 10ms to avoid
+                    # return the best move when less than 1ms to avoid
                     # running out of time and forfeiting the game
-                    if self.time_left() <= 0.010:
+                    if self.time_left() <= 0.001:
                         return best_move
 
             # Flag indicates perform Fixed-Depth Search
@@ -220,6 +222,8 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
+        # Reference: https://github.com/aimacode/aima-pseudocode/blob/master/md/Minimax-Decision.md
+
         # Initialise variable for no legal moves
         no_legal_moves = (-1, -1)
         best_move = no_legal_moves
@@ -247,8 +251,8 @@ class CustomPlayer:
             logging.debug("Best move: %r", best_move)
 
             # Obtain successor of current state by creating copy of board and applying a move.
-            forecast_game = game.forecast_move(move)
-            forecast_utility, _ = self.minimax(forecast_game, depth - 1, not maximizing_player)
+            next_state = game.forecast_move(move)
+            forecast_utility, _ = self.minimax(next_state, depth - 1, not maximizing_player)
             logging.debug("Forecast utility: %r", forecast_utility)
 
             if maximizing_player:
@@ -304,6 +308,7 @@ class CustomPlayer:
             raise Timeout()
 
         # TODO - Refactor duplicate from minimax and alphabeta into helper function
+        # Reference: https://github.com/aimacode/aima-pseudocode/blob/master/md/Alpha-Beta-Search.md
 
         # Initialise variable for no legal moves
         no_legal_moves = (-1, -1)
@@ -332,8 +337,8 @@ class CustomPlayer:
             logging.debug("Best move: %r", best_move)
 
             # Obtain successor of current state by creating copy of board and applying a move.
-            forecast_game = game.forecast_move(move)
-            forecast_utility, _ = self.alphabeta(forecast_game, depth - 1, alpha, beta, not maximizing_player)
+            next_state = game.forecast_move(move)
+            forecast_utility, _ = self.alphabeta(next_state, depth - 1, alpha, beta, not maximizing_player)
             logging.debug("Forecast utility: %r", forecast_utility)
 
             if maximizing_player:
@@ -374,11 +379,16 @@ def run():
         board = isolation.Board(agentUT, 'null_agent', w, h)
         board.apply_move(starting_location)
         board.apply_move(adversary_location)
+        legal_moves = board.get_legal_moves()
 
-        for move in board.get_legal_moves():
-            next_state = board.forecast_move(move)
-            v, _ = agentUT.minimax(next_state, test_depth)
-            assert type(v) is float, "Minimax function should return a floating point value approximating the score for the branch being searched."
+        # for move in legal_moves:
+        #    next_state = board.forecast_move(move)
+        #    v, _ = agentUT.minimax(next_state, test_depth)
+        #    assert type(v) is float, "Minimax function should return a floating point value approximating the score for the branch being searched."
+
+        move = agentUT.get_move(board, legal_moves, lambda: 99)
+        assert move in legal_moves, "The get_move() function failed as player 1 on a game in progress. It should return coordinates on the game board for the location of the agent's next move. The move must be one of the legal moves on the current game board."
+
         return
     except SystemExit:
         logging.exception('SystemExit occurred')

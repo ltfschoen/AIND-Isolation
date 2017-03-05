@@ -56,7 +56,7 @@
 
 * Paper Summary (Research Review)
 
-* [ ] - Completeness /
+* [X] - Completeness /
     * The write up is approximately 1 page (500 words) and includes a:
     * summary of the paper (including new techniques introduced), and the
     * key results (if any) that were achieved.

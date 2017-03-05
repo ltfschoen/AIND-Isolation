@@ -25,6 +25,8 @@ from multiprocessing import TimeoutError
 from queue import Empty as QueueEmptyError
 from importlib import reload
 
+import logging
+
 WRONG_MOVE = """
 The {} function failed because it returned a non-optimal move at search depth {}.
 Valid choices: {}

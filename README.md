@@ -32,20 +32,22 @@
         Submit your analysis as: `heuristic_analysis.pdf`
         Your analysis should conclude with a comparison of the different heuristics
         and your reasoning for choosing the heuristic you ultimately use in your submitted agent.
+
+* [X] - Implementation completed?
     * An iterative deepening adversarial search function: `CustomPlayer.get_move()`
         * The `get_move()` method should call either `minimax` or `alpha-beta` depending on
         the method selected. Iterative deepening should be used if the iterative flag is set.
     * A minimax adversarial search algorithm: `CustomPlayer.minimax()`
     * An alpha-beta pruning minimax search: `CustomPlayer.alphabeta()`
 
-* [ ] - Is Adversarial Search correctly implemented? using:
-* [ ] - iterative deepening,
+* [X] - Is Adversarial Search correctly implemented? using:
+* [X] - iterative deepening,
 * [X] - minimax, and
-* [ ] - alpha-beta pruning?
+* [X] - alpha-beta pruning?
 
-* [ ] - All Unit tests pass with `python agent_test.py -v`.
+* [X] - All Unit tests pass with `python agent_test.py -v`.
 * [X] - All `minimax` tests pass
-* [ ] - All `alphabeta` tests pass.
+* [X] - All `alphabeta` tests pass.
 
 * Heuristic Analysis
 

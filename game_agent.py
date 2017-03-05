@@ -129,25 +129,62 @@ class CustomPlayer:
 
         self.time_left = time_left
 
-        # TODO: finish this function!
-
         # Perform any required initializations, including selecting an initial
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
+
+        remaining_legal_moves = legal_moves
+        no_legal_moves = (-1, -1)
+        if not remaining_legal_moves:
+            logging.debug("Get Moves - Terminated due to no remaining legal moves")
+            return no_legal_moves
+
+        # Flag indicating Iterative Deepening Search - Initialise Depth at 1 (to later be incremented)
+        # Flag otherwise indicates Fixed-Depth Search (FDS) - Set to Search Depth parameter (only for FDS)
+        depth = 1 if self.iterative else self.search_depth
 
         try:
             # The search method call (alpha beta or minimax) should happen in
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            pass
+
+            # Flag indicates perform Iterative Deepening Search
+            if self.iterative:
+                logging.debug("Get Moves - Performing Iterative Deepening Search to depth %r: ", depth)
+                while True:
+                    if self.method == 'minimax':
+                        _, best_move = self.minimax(game, depth)
+                    elif self.method == 'alphabeta':
+                        _, best_move = self.alphabeta(game, depth)
+                    else:
+                        raise ValueError("Invalid method")
+                    depth += 1
+                    # Check remaining time between depth iterations and
+                    # return the best move when less than 10ms to avoid
+                    # running out of time and forfeiting the game
+                    if self.time_left() <= 0.010:
+                        return best_move
+
+            # Flag indicates perform Fixed-Depth Search
+            else:
+                logging.debug("Get Moves - Performing Fixed-Depth Search to depth %r: ", depth)
+                if self.method == 'minimax':
+                    _, best_move = self.minimax(game, depth)
+                elif self.method == 'alphabeta':
+                    _, best_move = self.alphabeta(game, depth)
+                else:
+                    raise ValueError("Invalid method")
+                return best_move
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            pass
+            logging.warning("Get Moves - Timeout reached")
+
+            return best_move
 
         # Return the best move from the last completed search iteration
-        raise NotImplementedError
+        return best_move
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -266,8 +303,59 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # TODO - Refactor duplicate from minimax and alphabeta into helper function
+
+        # Initialise variable for no legal moves
+        no_legal_moves = (-1, -1)
+        best_move = no_legal_moves
+        best_utility = float('-inf') if maximizing_player else float('inf')
+        current_player = game.active_player if maximizing_player else game.inactive_player
+        remaining_legal_moves = game.get_legal_moves(game.active_player)
+
+        logging.debug("Current player is Maximizing: %r", maximizing_player)
+        logging.debug("Current depth: %r", depth)
+        logging.debug("Best utility: %r", best_utility)
+        logging.debug("Remaining legal moves: %r", remaining_legal_moves)
+
+        # Recursion function termination conditions when legal moves exhausted or no plies left
+        if not remaining_legal_moves:
+            logging.debug("Recursion terminated due to no remaining legal moves")
+            return game.utility(current_player), no_legal_moves
+        elif depth == 0:
+            logging.debug("Recursion terminated due to no more plies to search")
+            return self.score(game, current_player), remaining_legal_moves[0]
+
+        # Recursively alternate between Maximise and Minimise calculations for decrementing depths
+        for move in remaining_legal_moves:
+            logging.debug("Recursion with move: %r", move)
+            logging.debug("Best utility: %r", best_utility)
+            logging.debug("Best move: %r", best_move)
+
+            # Obtain successor of current state by creating copy of board and applying a move.
+            forecast_game = game.forecast_move(move)
+            forecast_utility, _ = self.alphabeta(forecast_game, depth - 1, alpha, beta, not maximizing_player)
+            logging.debug("Forecast utility: %r", forecast_utility)
+
+            if maximizing_player:
+                logging.debug("Checking move with Maximising player, forecast_utility > best_utility? : %r", (forecast_utility > best_utility))
+                if forecast_utility > best_utility:
+                    best_utility, best_move = forecast_utility, move
+
+                    # Prune next successor node if possible
+                    if best_utility >= beta:
+                        break
+                    alpha = max(alpha, best_utility)
+            else:
+                logging.debug("Checking move with Minimising player, forecast_utility < best_utility? : %r", (forecast_utility > best_utility))
+                if forecast_utility < best_utility:
+                    best_utility, best_move = forecast_utility, move
+
+                    # Prune next successor node if possible
+                    if best_utility <= alpha:
+                        break
+                    beta = min(beta, best_utility)
+
+        return best_utility, best_move
 
 def run():
     try:

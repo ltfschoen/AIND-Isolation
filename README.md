@@ -90,7 +90,7 @@
 
 * Submission
 
-* [ ] - Submit your work by uploading a .zip file containing all your work, which must include
+* [X] - Submit your work by uploading a .zip file containing all your work, which must include
       the following files: `game_agent.py`, `heuristic_analysis.pdf`, `research_review.pdf`
 
 * Other

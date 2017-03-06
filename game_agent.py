@@ -23,19 +23,27 @@ def get_move_difference_factor(game, player) -> float:
     return (count_own_moves - count_opp_moves)
 
 def get_center_available_factor(game, player) -> float:
-    center_coords = (center_x, center_y) = int(game.height / 2), int(game.width / 2)
     own_moves = game.get_legal_moves(player)
-    center_available = own_moves.index(center_coords) if center_coords in own_moves else -1
+    center_x, center_y = game.width / 2, game.height / 2
+    center_available = -1
+    # Center of grid is only available when odd width and odd height
+    if not center_x.is_integer() and not center_y.is_integer():
+        center_coords = (int(center_x), int(center_y))
+        center_available = own_moves.index(center_coords) if center_coords in own_moves else -1
     # Next move should always be to center square if available
     return 2.0 if (center_available != -1) else 1.0
+
+def is_empty_board(count_total_positions, count_empty_coords):
+    all_empty = True if (count_total_positions == count_empty_coords) else False
+    if all_empty:
+        return 1.0
 
 def get_reflection_available_factor(game, player) -> float:
     count_total_positions = game.height * game.width
     count_empty_coords = len(game.get_blank_spaces())
-    all_empty = True if (count_total_positions == count_empty_coords) else False
 
     # Return if no reflection move possible before first move
-    if all_empty:
+    if is_empty_board(count_total_positions, count_empty_coords):
         return 1.0
 
     own_moves = game.get_legal_moves(player)
@@ -58,11 +66,61 @@ def get_reflection_available_factor(game, player) -> float:
             return 2.0
     return 1.0
 
-def heuristic_1(game, player) -> float:
+def get_partition_possible_factor(game, player):
+    count_total_positions = game.height * game.width
+    count_empty_coords = len(game.get_blank_spaces())
+
+    empty_coords = game.get_blank_spaces()
+
+    # Return if no partition possible before first move
+    if is_empty_board(count_total_positions, count_empty_coords):
+        return 1.0
+
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+
+    for move in own_moves:
+        cell_left = (move[0]-1, move[1])
+        cell_right = (move[0]+1, move[1])
+        cell_below = (move[0], move[1]-1)
+        cell_above = (move[0], move[1]+1)
+
+        cell_left_x2 = (move[0]-2, move[1])
+        cell_right_x2 = (move[0]+2, move[1])
+        cell_below_x2 = (move[0], move[1]-2)
+        cell_above_x2 = (move[0], move[1]+2)
+
+        is_cell_left = cell_left not in empty_coords
+        is_cell_right = cell_right not in empty_coords
+        is_cell_below = cell_below not in empty_coords
+        is_cell_above = cell_above not in empty_coords
+
+        is_cell_left_x2 = cell_left_x2 not in empty_coords
+        is_cell_right_x2 = cell_right_x2 not in empty_coords
+        is_cell_below_x2 = cell_below_x2 not in empty_coords
+        is_cell_above_x2 = cell_above_x2 not in empty_coords
+
+        # Firstly check if two cells in sequence on either side of possible move
+        # If so give double bonus points
+        if ( (is_cell_left and is_cell_left_x2) or
+             (is_cell_right and is_cell_right_x2) or
+             (is_cell_below and is_cell_below_x2) or
+             (is_cell_above and is_cell_above_x2) ):
+            return 4.0
+
+        # Secondly check if just one cell surrounding possible move
+        if (is_cell_left or
+            is_cell_right or
+            is_cell_below or
+            is_cell_above):
+            return 2.0
+
+    return 1.0
+
+def heuristic_1_center(game, player) -> float:
     """
-    Extend the "Improved" evaluation function so it outputs a
-    score equal to the difference in the number of moves available to the
-    two players, which is multiplied by a Center Available Factor
+    Evaluation function outputs a
+    score equal to the Center Available Factor
     that has higher weight when center square still available on any move
 
     Parameters
@@ -81,17 +139,15 @@ def heuristic_1(game, player) -> float:
     float
         The heuristic value of the current game state
     """
-    move_difference_factor = get_move_difference_factor(game, player)
     center_available_factor = get_center_available_factor(game, player)
 
     # Heuristic score output
-    return float(move_difference_factor * center_available_factor)
+    return float(center_available_factor)
 
-def heuristic_2(game, player) -> float:
+def heuristic_2_reflection(game, player) -> float:
     """
-    In addition to Heuristic 1 scoring, Heuristic 2
-    multiplies by a Reflection Available Factor
-    that has higher weight when reflection of opposition player
+    Heuristic 2's Reflection Available Factor
+    has higher weight when reflection of opposition player
     position is available on other side of board.
     i.e. In game tree, for all available opposition in coordinates,
     count how many available reflection moves (on opposite side of board)
@@ -115,11 +171,144 @@ def heuristic_2(game, player) -> float:
         The heuristic value of the current game state
     """
 
-    move_difference_factor = get_move_difference_factor(game, player)
+    reflection_available_factor = get_reflection_available_factor(game, player)
+
+    return float(reflection_available_factor)
+
+def heuristic_3_partition(game, player) -> float:
+    """
+    Heuristic 3's Partition Growth Factor
+    has higher weight when available moves are
+    vertically or horizontally (not diagonally) adjacent
+    to a sequence of one or two blocked locations
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+
+    partition_possible_factor = get_partition_possible_factor(game, player)
+
+    return float(partition_possible_factor)
+
+def heuristic_combined_1_2(game, player) -> float:
+    """
+    Combines Heuristics 1 and 2
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+
     center_available_factor = get_center_available_factor(game, player)
     reflection_available_factor = get_reflection_available_factor(game, player)
 
-    return float(move_difference_factor * center_available_factor * reflection_available_factor)
+    return float(center_available_factor + reflection_available_factor)
+
+def heuristic_combined_1_3(game, player) -> float:
+    """
+    Combines Heuristics 1 and 3
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+
+    center_available_factor = get_center_available_factor(game, player)
+    partition_possible_factor = get_partition_possible_factor(game, player)
+
+    return float(center_available_factor + partition_possible_factor)
+
+def heuristic_combined_2_3(game, player) -> float:
+    """
+    Combines Heuristics 2 and 3
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+
+    reflection_available_factor = get_reflection_available_factor(game, player)
+    partition_possible_factor = get_partition_possible_factor(game, player)
+
+    return float(reflection_available_factor + partition_possible_factor)
+
+def heuristic_combined_1_2_3(game, player) -> float:
+    """
+    Combines Heuristics 1, 2 and 3
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+
+    center_available_factor = get_center_available_factor(game, player)
+    reflection_available_factor = get_reflection_available_factor(game, player)
+    partition_possible_factor = get_partition_possible_factor(game, player)
+
+    return float(center_available_factor +
+                 reflection_available_factor +
+                 partition_possible_factor)
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -154,11 +343,16 @@ def custom_score(game, player):
         "null_score": null_score,
         "open_move_score": open_move_score,
         "improved_score": improved_score,
-        "heuristic_1": heuristic_1,
-        "heuristic_2": heuristic_2
+        "heuristic_1_center": heuristic_1_center,
+        "heuristic_2_reflection": heuristic_2_reflection,
+        "heuristic_3_partition": heuristic_3_partition,
+        "heuristic_combined_1_2": heuristic_combined_1_2,
+        "heuristic_combined_1_3": heuristic_combined_1_3,
+        "heuristic_combined_2_3": heuristic_combined_2_3,
+        "heuristic_combined_1_2_3": heuristic_combined_1_2_3
     }
 
-    return heuristics_options["heuristic_2"](game, player)
+    return heuristics_options["heuristic_2_reflection"](game, player)
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function

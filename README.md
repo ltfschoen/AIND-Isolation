@@ -22,7 +22,7 @@
 
 * Game Playing Agent
 
-* [ ] - Implement in `game_agent.py` and Submit the code file: `game_agent.py`:
+* [X] - Implement in `game_agent.py` and Submit the code file: `game_agent.py`:
     * Refer to my notes on Lesson 6.16
     * At least three custom heuristic functions (only one of which should be submitted,
     as `custom_score()`)
@@ -52,17 +52,17 @@
 
 * Heuristic Analysis
 
-* [ ] - Have at least three (3) evaluation heuristics besides
+* [X] - Have at least three (3) evaluation heuristics besides
       `null_score()`, `open_move_score()`, and `improved_score()` (in sample_players.py) been implemented and analyzed?
       (At least three evaluation functions are implemented and analyzed)
 
-* [ ] - Has the performance of agents against the testing agents been adequately described?
+* [X] - Has the performance of agents against the testing agents been adequately described?
       / A brief report lists (using a table and any appropriate visualizations) and verbally
       describes the performance of agents using the implemented evaluation functions.
       Performance data includes results from tournament.py comparing (at a minimum) the
       best performing student heuristic against the ID_Improved agent.
 
-* [ ] - Does the report make a recommendation about the best evaluation function,
+* [X] - Does the report make a recommendation about the best evaluation function,
       and is this recommendation adequately justified?
       / The report makes a recommendation about which evaluation function should be
       used and justifies the recommendation with at least three reasons supported by the data.

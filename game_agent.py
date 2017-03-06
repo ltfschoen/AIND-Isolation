@@ -9,11 +9,117 @@ relative strength using tournament.py and include the results in your report.
 import random
 import logging
 import typing; from typing import *
-from heuristics import null_score, open_move_score, improved_score
+import itertools
+from itertools import product
+from sample_players import null_score, open_move_score, improved_score
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
+
+def get_move_difference_factor(game, player) -> float:
+    count_own_moves = len(game.get_legal_moves(player))
+    count_opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return (count_own_moves - count_opp_moves)
+
+def get_center_available_factor(game, player) -> float:
+    center_coords = (center_x, center_y) = int(game.height / 2), int(game.width / 2)
+    own_moves = game.get_legal_moves(player)
+    center_available = own_moves.index(center_coords) if center_coords in own_moves else -1
+    # Next move should always be to center square if available
+    return 2.0 if (center_available != -1) else 1.0
+
+def get_reflection_available_factor(game, player) -> float:
+    count_total_positions = game.height * game.width
+    count_empty_coords = len(game.get_blank_spaces())
+    all_empty = True if (count_total_positions == count_empty_coords) else False
+
+    # Return if no reflection move possible before first move
+    if all_empty:
+        return 1.0
+
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+    count_own_moves = len(game.get_legal_moves(player))
+    count_opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    all_coords = list(itertools.product(range((game.width)), range((game.height))))
+    player_coords = (player_x, player_y) = game.get_player_location(player)
+    opp_coords = (opp_x, opp_y) = game.get_player_location(game.get_opponent(player))
+    player_index = all_coords.index(player_coords)
+    opp_index = all_coords.index(opp_coords)
+    mirrored_all_coords = all_coords[::-1]
+    mirrored_player_coords = mirrored_all_coords[player_index]
+    mirrored_opp_coords = mirrored_all_coords[opp_index]
+
+    # Return high Reflection Available Factor if the mirror coords that
+    # correspond to the oppositions current coords is an available legal move for current player
+    for legal_player_move_coords in own_moves:
+        if legal_player_move_coords == mirrored_opp_coords:
+            return 2.0
+    return 1.0
+
+def heuristic_1(game, player) -> float:
+    """
+    Extend the "Improved" evaluation function so it outputs a
+    score equal to the difference in the number of moves available to the
+    two players, which is multiplied by a Center Available Factor
+    that has higher weight when center square still available on any move
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+    move_difference_factor = get_move_difference_factor(game, player)
+    center_available_factor = get_center_available_factor(game, player)
+
+    # Heuristic score output
+    return float(move_difference_factor * center_available_factor)
+
+def heuristic_2(game, player) -> float:
+    """
+    In addition to Heuristic 1 scoring, Heuristic 2
+    multiplies by a Reflection Available Factor
+    that has higher weight when reflection of opposition player
+    position is available on other side of board.
+    i.e. In game tree, for all available opposition in coordinates,
+    count how many available reflection moves (on opposite side of board)
+    are available as a legal moves for the current player. These should result in
+    higher weight if available
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+
+    move_difference_factor = get_move_difference_factor(game, player)
+    center_available_factor = get_center_available_factor(game, player)
+    reflection_available_factor = get_reflection_available_factor(game, player)
+
+    return float(move_difference_factor * center_available_factor * reflection_available_factor)
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -47,10 +153,12 @@ def custom_score(game, player):
     heuristics_options = {
         "null_score": null_score,
         "open_move_score": open_move_score,
-        "improved_score": improved_score
+        "improved_score": improved_score,
+        "heuristic_1": heuristic_1,
+        "heuristic_2": heuristic_2
     }
 
-    return heuristics_options["improved_score"](game, player)
+    return heuristics_options["heuristic_2"](game, player)
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -135,6 +243,7 @@ class CustomPlayer:
 
         remaining_legal_moves = legal_moves
         no_legal_moves = (-1, -1)
+        best_move = no_legal_moves
         if not remaining_legal_moves:
             logging.debug("Get Moves - Terminated due to no remaining legal moves")
             return no_legal_moves
@@ -154,6 +263,7 @@ class CustomPlayer:
             if self.iterative:
                 logging.debug("Get Moves - Performing Iterative Deepening Search to depth %r: ", depth)
                 while True:
+                    # logging.debug("Time left is: %r", self.time_left())
                     depth += 1
                     if self.method == 'minimax':
                         _, best_move = self.minimax(game, depth)
@@ -171,6 +281,7 @@ class CustomPlayer:
             # Flag indicates perform Fixed-Depth Search
             else:
                 logging.debug("Get Moves - Performing Fixed-Depth Search to depth %r: ", depth)
+                # logging.debug("Time left is: %r", self.time_left())
                 if self.method == 'minimax':
                     _, best_move = self.minimax(game, depth)
                 elif self.method == 'alphabeta':
@@ -181,7 +292,7 @@ class CustomPlayer:
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            logging.warning("Get Moves - Timeout reached")
+            # logging.warning("Get Moves - Timeout reached")
 
             return best_move
 
@@ -246,6 +357,7 @@ class CustomPlayer:
 
         # Recursively alternate between Maximise and Minimise calculations for decrementing depths
         for move in remaining_legal_moves:
+            # logging.debug("Recursion with time left is: %r", self.time_left())
             logging.debug("Recursion with move: %r", move)
             logging.debug("Best utility: %r", best_utility)
             logging.debug("Best move: %r", best_move)
@@ -332,6 +444,7 @@ class CustomPlayer:
 
         # Recursively alternate between Maximise and Minimise calculations for decrementing depths
         for move in remaining_legal_moves:
+            # logging.debug("Recursion with time left is: %r", self.time_left())
             logging.debug("Recursion with move: %r", move)
             logging.debug("Best utility: %r", best_utility)
             logging.debug("Best move: %r", best_move)

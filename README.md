@@ -4,6 +4,7 @@
 # Table of Contents
   * [Chapter 1 - My Setup and Rubrics Checklist](#chapter-1)
   * [Chapter 2 - Info from Udacity](#chapter-2)
+  * [Chapter 3 - AIND Player vs Player Competition](#chapter-3)
 
 # Chapter 1 - My Setup and Rubrics Checklist <a id="chapter-1"></a>
 
@@ -201,3 +202,9 @@ The tournament opponents are listed below. (See also: sample heuristics and play
 ## Submitting
 
 Your project is ready for submission when it meets all requirements of the project rubric.  Your code is finished when it passes all unit tests, and you have successfully implemented a suitable heuristic function.
+
+# Chapter 3 - AIND Player vs Player Competition <a id="chapter-3"></a>
+
+* Instructions: https://docs.google.com/document/d/1r4z6DF0ChUvBy-ivw0PxLbVv7xqC_E07JdOlNK3_c0c
+* Submission Guideline: https://github.com/udacity/AIND-Chiron
+* Note: competition/game_agent.py specifically created for the competition entry. Verification by AIND-Chiron passed.
